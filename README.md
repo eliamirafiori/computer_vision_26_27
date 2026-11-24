@@ -1,5 +1,9 @@
 # Computer Vision
 
+## GitHub repo
+
+eliamirafiori/computer_vision_26_27
+
 ## Installing PyTorch
 
 1. Check if you have an NVIDIA GPU.
