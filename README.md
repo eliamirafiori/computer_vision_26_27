@@ -8,3 +8,15 @@
 4. Install [PyTorch](https://pytorch.org/get-started/locally/) libraries
 
 For Windows use `pip`, not `pip3`
+
+## Installing Libraries
+
+```bash
+pip install -r requirements.txt
+```
+
+## Run the Script
+
+```bash
+python <folder>/<file>.py
+```
