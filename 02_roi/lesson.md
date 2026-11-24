@@ -48,7 +48,12 @@ $$\text{IoU}(A, B) = \frac{\text{Area}(A \cap B)}{\text{Area}(A \cup B)}$$
 
 An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are identical.
 
+![IoU](./assets/iou_equation.webp)
+
+[Online Tutorial](https://pyimagesearch.com/2015/03/23/sliding-windows-for-object-detection-with-python-and-opencv/)
+
 #### Step-by-step recipe to implement:
+
 1. **Find the overlapping rectangle coordinates:**
    * Top-left of intersection:
      $$x_{\text{inter},1} = \max(a_{x1}, b_{x1}), \quad y_{\text{inter},1} = \max(a_{y1}, b_{y1})$$
@@ -72,7 +77,10 @@ An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are
 
 **Intuition:** A detector often fires $5$ or $10$ times around the exact same object with slightly shifted boxes. **NMS** keeps only the single most confident box for each object and deletes its overlapping duplicates.
 
+![IoU Examples](./assets/iou_examples.webp)
+
 #### Step-by-step recipe to implement:
+
 1. **Handle the empty case:** If `len(boxes) == 0`, return an empty list `[]`.
 2. **Sort by confidence (highest first):** Create an array `order` containing the indices of `boxes` sorted in **descending** order of `scores` (Hint: `np.argsort(scores)[::-1]`).
 3. **Initialize an empty list:** `keep = []`.
@@ -95,7 +103,12 @@ An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are
 
 **Intuition:** Imagine sliding a cardboard frame of size $w_{\text{win}} \times h_{\text{win}}$ across a photograph, left-to-right and top-to-bottom, jumping by `stride` pixels each step. Every position gives you one candidate box.
 
+![Sliding Windows](./assets/sliding-window-animated.gif)
+
+[Online Tutorial](https://pyimagesearch.com/2015/03/16/image-pyramids-with-python-and-opencv/)
+
 #### Step-by-step recipe to implement:
+
 1. Read image height $H$ and width $W$ from `image.shape[:2]`, and unpack `win_w, win_h = window_size`.
 2. Create an empty list `proposals = []`.
 3. Write two nested `for` loops:
@@ -116,10 +129,16 @@ An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are
 ### Function: `pyramid_sliding_window(image, window_size=(64, 64), stride=16, scales=(0.40, 0.55, 0.70, 1.0, 1.4, 1.8))`
 
 **Intuition:** Instead of resizing the window, keep your $64 \times 64$ window fixed and **resize the image** to multiple scales:
+
 * **Scale $> 1.0$ (zoom in / enlarge image):** Makes *small* objects appear bigger so they fit inside the $64 \times 64$ window.
 * **Scale $< 1.0$ (zoom out / shrink image):** Makes *large* objects appear smaller so they fit inside the $64 \times 64$ window.
 
+![Pyramid](./assets/pyramid_example.webp)
+
+[Online Tutorial](https://pyimagesearch.com/2020/06/29/opencv-selective-search-for-object-detection/)
+
 #### Step-by-step recipe to implement:
+
 1. Read original `img_h, img_w = image.shape[:2]` and initialize `proposals = []`.
 2. Loop over each `scale` in `scales`:
    * Compute new dimensions:
@@ -138,12 +157,15 @@ An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are
 
 ## 6. Task 4: Simplified Selective Search
 
-**Intuition:** Scanning $7{,}000+$ grid windows wastes massive amounts of compute on empty background. **Selective Search** (Uijlings et al., 2013) works *bottom-up*:
+**Intuition:** Scanning $7{,}000+$ grid windows wastes massive amounts of compute on empty background. **Selective Search** [(Uijlings et al., 2013)](https://link.springer.com/article/10.1007/s11263-013-0620-5) works *bottom-up*:
+
 1. Start by grouping nearby similar pixels into small patches called **superpixels** (using the SLIC algorithm).
 2. Repeatedly **merge the two most similar adjacent regions** into a bigger region until the whole image becomes one single region.
 3. Save the bounding box of every initial region and every newly merged region as a proposal!
 
 Because superpixels hug real object boundaries, this finds objects of **all sizes** with **10$\times$ fewer proposals** than a pyramid search.
+
+![Simplified Selective Search](./assets/opencv_selective_search_hierarchical.webp)
 
 ---
 
@@ -177,6 +199,7 @@ $$s(r_a, r_b) = s_{\text{color}}(r_a, r_b) + s_{\text{size}}(r_a, r_b) + s_{\tex
 ### Part 4B: `_selective_search_single_scale(image, n_segments)` and `simplified_selective_search(image, segment_scales=(110, 260))`
 
 #### Step-by-step recipe for `_selective_search_single_scale(image, n_segments)`:
+
 1. Compute `img_area = float(img_h * img_w)`.
 2. **Generate initial superpixels:**
    * Convert `image` from BGR to RGB (`cv2.cvtColor(image, cv2.COLOR_BGR2RGB)`), because `skimage.segmentation.slic` expects RGB input.
@@ -205,7 +228,9 @@ $$s(r_a, r_b) = s_{\text{color}}(r_a, r_b) + s_{\text{size}}(r_a, r_b) + s_{\tex
 5. **Return `proposals`.**
 
 #### Multi-Scale Wrapper: `simplified_selective_search(image, segment_scales=(110, 260))`
+
 Why do we run two SLIC scales (`110` and `260`)?
+
 * With only $110$ coarse superpixels on a $480 \times 640$ image, each superpixel averages $\approx 53 \times 53$ pixels—bigger than our $44 \times 44$ small target! Because Selective Search only **merges** and never **splits**, a coarse superpixel can swallow a small object together with background.
 * Adding a finer pass (`260` superpixels) cleanly captures small objects while keeping the total proposal count very low.
 
@@ -217,19 +242,8 @@ Why do we run two SLIC scales (`110` and `260`)?
 
 Once you complete all four tasks and run the script, your console output should closely match these benchmark numbers:
 
-| Method | Total Proposals | Best IoU per GT (Small / Med / Large) | Proposal Recall ($\text{IoU} \ge 0.5$) | Raw Hits $\rightarrow$ After NMS | Detection Recall / Precision |
-| :--- | :---: | :---: | :---: | :---: | :---: |
-| **1. Fixed Sliding Window** | $\approx 999$ | $[0.47, \, 0.48, \, 0.15]$ | $0.0\%$ | $0 \rightarrow 0$ | $0.0\% / 0.0\%$ |
-| **2. Image Pyramid Search** | $\approx 7{,}399$ | $[0.93, \, 0.73, \, 0.78]$ | $100.0\%$ | $4 \rightarrow 3$ | $100.0\% / 100.0\%$ |
-| **3. Simplified Selective Search** | $\approx 648$ | $[1.00, \, 0.99, \, 0.98]$ | $100.0\%$ | $10 \rightarrow 3$ | $100.0\% / 100.0\%$ |
-
----
-
-## 8. Discussion Questions to Think About
-
-After your code matches the table above, try these quick experiments and prepare to discuss them in class:
-
-1. **Tuning the Fixed Window:** Change `window_size=(64, 64)` to `(88, 88)` in `main()`. Why does recall jump from $0\%$ to $33.3\%$, and why can it *never* reach $100\%$?
-2. **The Real-World Speed Gap:** Notice that Selective Search proposes **11$\times$ fewer boxes** than Image Pyramid Search while getting **higher IoU** ($0.98$--$1.00$ vs. $0.73$--$0.78$). What happens to total inference time if `score_proposal` is replaced by a deep ResNet-50 CNN?
-3. **Why NMS Is Still Needed for Selective Search:** Selective Search actually produced *more* raw positive hits ($10$) than the pyramid ($4$) before NMS. Why does hierarchical merging create multiple high-scoring overlapping boxes around the same object?
-4. **Failure Mode of Superpixels:** Try running `simplified_selective_search` with only `segment_scales=(110,)`. Which object disappears, and why?
+| Method                             |  Total Proposals  | Best IoU per GT (Small / Med / Large) | Proposal Recall ($\text{IoU} \ge 0.5$) | Raw Hits $\rightarrow$ After NMS | Detection Recall / Precision |
+| :--------------------------------- | :---------------: | :-----------------------------------: | :------------------------------------: | :------------------------------: | :--------------------------: |
+| **1. Fixed Sliding Window**        |   $\approx 999$   |      $[0.47, \, 0.48, \, 0.15]$       |                $0.0\%$                 |        $0 \rightarrow 0$         |       $0.0\% / 0.0\%$        |
+| **2. Image Pyramid Search**        | $\approx 7{,}399$ |      $[0.93, \, 0.73, \, 0.78]$       |               $100.0\%$                |        $4 \rightarrow 3$         |     $100.0\% / 100.0\%$      |
+| **3. Simplified Selective Search** |   $\approx 648$   |      $[1.00, \, 0.99, \, 0.98]$       |               $100.0\%$                |        $10 \rightarrow 3$        |     $100.0\% / 100.0\%$      |
