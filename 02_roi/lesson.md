@@ -50,7 +50,7 @@ An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are
 
 ![IoU](./assets/iou_equation.webp)
 
-[Online Tutorial](https://pyimagesearch.com/2015/03/23/sliding-windows-for-object-detection-with-python-and-opencv/)
+[Online Tutorial](https://pyimagesearch.com/2016/11/07/intersection-over-union-iou-for-object-detection/)
 
 #### Step-by-step recipe to implement:
 
@@ -105,7 +105,7 @@ An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are
 
 ![Sliding Windows](./assets/sliding-window-animated.gif)
 
-[Online Tutorial](https://pyimagesearch.com/2015/03/16/image-pyramids-with-python-and-opencv/)
+[Online Tutorial](https://pyimagesearch.com/2015/03/23/sliding-windows-for-object-detection-with-python-and-opencv/)
 
 #### Step-by-step recipe to implement:
 
@@ -135,7 +135,7 @@ An IoU of $0.0$ means no overlap at all; an IoU of $1.0$ means the two boxes are
 
 ![Pyramid](./assets/pyramid_example.webp)
 
-[Online Tutorial](https://pyimagesearch.com/2020/06/29/opencv-selective-search-for-object-detection/)
+[Online Tutorial](https://pyimagesearch.com/2015/03/16/image-pyramids-with-python-and-opencv/)
 
 #### Step-by-step recipe to implement:
 
@@ -167,6 +167,8 @@ Because superpixels hug real object boundaries, this finds objects of **all size
 
 ![Simplified Selective Search](./assets/opencv_selective_search_hierarchical.webp)
 
+[Online Tutorial](https://pyimagesearch.com/2020/06/29/opencv-selective-search-for-object-detection/)
+
 ---
 
 ### Part 4A: `compute_region_similarity(reg_a, reg_b, img_area)`
@@ -181,6 +183,7 @@ You must compute the combined similarity score:
 $$s(r_a, r_b) = s_{\text{color}}(r_a, r_b) + s_{\text{size}}(r_a, r_b) + s_{\text{fill}}(r_a, r_b)$$
 
 #### The 3 formulas to implement:
+
 1. **Color similarity ($s_{\text{color}}$):** How similar are their color histograms? Use **histogram intersection**:
    $$s_{\text{color}} = \sum_{k=1}^{48} \min(h_a[k], \, h_b[k])$$
    *(Hint: in NumPy this is a single line with `np.minimum(...).sum()`.)*
