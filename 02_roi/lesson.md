@@ -5,7 +5,7 @@
 
 ---
 
-## 1. The Big Picture: Why Do Region Proposals Matter?
+## 1. Why Do Region Proposals Matter?
 
 Imagine you have a classifier that can look at a small cropped image and answer: *"Is there a target object inside this box?"*  
 The problem is: **where in the full image should you crop?**
